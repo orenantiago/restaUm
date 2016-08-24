@@ -8,8 +8,8 @@ typedef struct {
 } pilha;
 
 typedef struct {
-    int linha, coluna, numero;
-} vazio;
+    int linha, coluna;
+} posicao;
 
 pilha * criaPilha(int n) {
     pilha * p;
@@ -109,9 +109,52 @@ int tabuleiroIgual(int ** tab1, int ** tab2, int m, int n) {
 
     return igual;
 }
+/*
+    2
+    ^
+    |
+3<--v-->1 
+    |
+    v
+    4
+v = peça vazia
+ela se movimenta sse tiver duas peças ao lado do movimento
+apos o movimento, se torna peça e as peças viram espaço
+*/
+
+int verificaMovimento(int ** tab, int m, int n, posicao p, int movimento) {
+    int pode;
+
+    switch movimento {
+        case 1:
+            if (p.coluna + 1 < n && p.coluna + 2 < n)
+                if (tab[p.linha][p.coluna + 1] == 1 && tab[p.linha][p.coluna + 2] == 1)
+                    pode = 1;
+        break;
+        
+        case 2:
+            if (p.linha - 1 >= 0 && p.linha - 2 > 0)
+                if (tab[p.linha - 1][p.coluna] == 1 && tab[p.linha + 2][p.coluna] == 1)
+                    pode = 1;
+        break;
+
+        case 3:
+            if (p.coluna - 1 < n && p.coluna - 2 < n)
+                if (tab[p.linha][p.coluna - 1] == 1 && tab[p.linha][p.coluna - 2] == 1)
+                    pode = 1;
+        break;
+
+        case 4:
+            if (p.linha + 1 < m && p.linha + 2 < m)
+                if (tab[p.linha + 1][p.coluna] == 1 && tab[p.linha + 2][p.coluna] == 1)
+                    pode = 1;
+        break;
+    }
+}
 //void movimenta(int ** tab, posicao)
 
 void jogo(int n) {
+    pilha  * movimentos, pilha * vazios
 
 }
 int main(int argc, char const *argv[])
