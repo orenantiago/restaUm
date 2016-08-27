@@ -14,18 +14,18 @@ typedef struct {
 pilha * criaPilha(int n) {
     pilha * p;
     p = malloc(sizeof(pilha));
-    (*p).v = calloc(n, sizeof(int));
-    (*p).topo = 0;
+    p -> v = calloc(n, sizeof(int));
+    p -> topo = 0;
     return p;
 }
 
 void empilha(pilha * p, int x) {
-    (*p).v[(*p).topo++];
+    p -> v[p -> topo++] = x;
 }
 
-int desempilha(pilha * p, int x) {
-    (*p).topo --;
-    (*p).v[(*p).topo];
+int desempilha(pilha * p) {
+    p -> topo --;
+    return p -> v[p -> topo];
 }
 
 int pilhaVazia(pilha p) {
@@ -33,6 +33,15 @@ int pilhaVazia(pilha p) {
         return 1;
     else
         return 0;
+}
+
+void destroiPilha(pilha * p) {
+    free(p -> v);
+    free(p);
+}
+
+int tamanhoPilha(pilha p) {
+    return p.topo;
 }
 
 int ** criaMatriz(int m, int n) {
@@ -154,7 +163,7 @@ int verificaMovimento(int ** tab, int m, int n, posicao p, int movimento) {
 //void movimenta(int ** tab, posicao)
 
 void jogo(int n) {
-    pilha  * movimentos, pilha * vazios
+    pilha  * movimentos, pilha *vazios
 
 }
 int main(int argc, char const *argv[])
