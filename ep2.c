@@ -150,7 +150,7 @@ apos o movimento, se torna peça e as peças viram espaço
 */
 
 int verificaMovimento(int ** tab, int m, int n, posicao p, int movimento) {
-    int pode;
+    int pode = 0;
 
     switch (movimento) {
         case 1:
@@ -161,7 +161,7 @@ int verificaMovimento(int ** tab, int m, int n, posicao p, int movimento) {
         
         case 2:
             if (p.linha - 1 >= 0 && p.linha - 2 > 0)
-                if (tab[p.linha - 1][p.coluna] == 1 && tab[p.linha + 2][p.coluna] == 1)
+                if (tab[p.linha - 1][p.coluna] == 1 && tab[p.linha - 2][p.coluna] == 1)
                     pode = 1;
         break;
 
@@ -177,6 +177,7 @@ int verificaMovimento(int ** tab, int m, int n, posicao p, int movimento) {
                     pode = 1;
         break;
     }
+    return pode;
 }
 
 
@@ -286,10 +287,30 @@ void jogo(int ** tab, int m, int n) {
 int main(int argc, char const *argv[])
 {
     int ** tab;
+    posicao aux;
+    pilhaPosicao * pos;
+
+    pos = criaPilhaPosicao(10);
+
+    aux.linha = 3;
+    aux.coluna = 3;
+    
     tab = criaMatriz(7, 7);
     setJogo(tab, 7, 2);
-    jogo(tab, 7, 7);
 
+    tab[6][3] = -1;
+    imprimeMatriz(tab, 7, 7);
+
+    if(verificaMovimento(tab, 7, 7, aux, 4)){
+        printf("pode mover\n");
+        movimenta(tab, aux, 4, pos);
+        imprimeMatriz(tab, 7, 7);
+    } else {
+        printf("não pude mover\n");
+    }
+
+    destroiMatriz(tab, 7);
+    destroiPilhaPosicao(pos);
     
     return 0;
 }
