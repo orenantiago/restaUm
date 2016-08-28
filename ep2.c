@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 typedef struct {
     int * v;
     int topo;
@@ -28,6 +27,10 @@ int desempilha(pilha * p) {
     return p -> v[p -> topo];
 }
 
+int tamanhoPilha(pilha p) {
+    return p.topo;
+}
+
 int pilhaVazia(pilha p) {
     if (p.topo == 0)
         return 1;
@@ -40,8 +43,42 @@ void destroiPilha(pilha * p) {
     free(p);
 }
 
-int tamanhoPilha(pilha p) {
+typedef struct {
+    posicao * v;
+    int topo;
+} pilhaPosicao;
+
+pilhaPosicao * criaPilhaPosicao(int n) {
+    pilhaPosicao * p;
+    p = malloc(sizeof(pilha));
+    p -> v = malloc(n * sizeof(posicao));
+    p -> topo = 0;
+    return p;
+}
+
+void empilhaPosicao(pilhaPosicao * p, posicao x) {
+    p -> v[p -> topo++] = x;
+}
+
+posicao desempilhaPosicao(pilhaPosicao * p) {
+    p -> topo --;
+    return p -> v[p -> topo];
+}
+
+int tamanhoPilhaPosicao(pilhaPosicao p) {
     return p.topo;
+}
+
+int pilhaPosicaoVazia(pilhaPosicao p) {
+    if (p.topo == 0)
+        return 1;
+    else
+        return 0;
+}
+
+void destroiPilhaPosicao(pilhaPosicao * p) {
+    free(p -> v);
+    free(p);
 }
 
 int ** criaMatriz(int m, int n) {
@@ -162,13 +199,29 @@ int verificaMovimento(int ** tab, int m, int n, posicao p, int movimento) {
 }
 //void movimenta(int ** tab, posicao)
 
-void jogo(int n) {
-    pilha  * movimentos, pilha *vazios
+void jogo(int ** tab) {
+    int ** T, i, j;
+    
+
+    T = malloc(m * sizeof(int *));
+    for (i = 0; i < n; i++)
+        T[i] = malloc(n * sizeof(int));
+
+    for (i = 0; i < m; i++) 
+        for (j = 0; j < n; j++) {
+            if(tab[i][j] == 1)
+                T[i][j] = -1;
+            else if(tab[i][j] == -1)
+                T[i][j] = 1;
+            else
+                T[i][j] = 0;
+        }
+
 
 }
 int main(int argc, char const *argv[])
 {
-    int ** tab, ** tab2;
+    int ** tab;
     tab = criaMatriz(7, 7);
     setJogo(tab, 7, 2);
 
