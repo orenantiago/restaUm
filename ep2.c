@@ -91,7 +91,7 @@ int ** criaMatriz(int m, int n) {
 
     return tab;
 }
-void destroiMatriz(int ** tab, int m, int n) {
+void destroiMatriz(int ** tab, int m) {
     int i;
     for (i = 0; i < m; i++)
         free(tab[i]);
@@ -120,25 +120,6 @@ void setJogo(int ** tab, int m, int dist) {
             tab[j][i] = 1;
         }
     tab[(m-1)/2][(m-1)/2] = -1;
-}
-
-int ** inverteTabuleiro(int ** tab, int m, int n) {
-    int ** T, i, j;
-
-    T = malloc(m * sizeof(int *));
-    for (i = 0; i < n; i++)
-        T[i] = malloc(n * sizeof(int));
-
-    for (i = 0; i < m; i++) 
-        for (j = 0; j < n; j++) {
-            if(tab[i][j] == 1)
-                T[i][j] = -1;
-            else if(tab[i][j] == -1)
-                T[i][j] = 1;
-            else
-                T[i][j] = 0;
-        }
-    return T;
 }
 
 int tabuleiroIgual(int ** tab1, int ** tab2, int m, int n) {
@@ -171,7 +152,7 @@ apos o movimento, se torna peça e as peças viram espaço
 int verificaMovimento(int ** tab, int m, int n, posicao p, int movimento) {
     int pode;
 
-    switch movimento {
+    switch (movimento) {
         case 1:
             if (p.coluna + 1 < n && p.coluna + 2 < n)
                 if (tab[p.linha][p.coluna + 1] == 1 && tab[p.linha][p.coluna + 2] == 1)
@@ -197,43 +178,118 @@ int verificaMovimento(int ** tab, int m, int n, posicao p, int movimento) {
         break;
     }
 }
-//void movimenta(int ** tab, posicao)
 
-void jogo(int ** tab) {
-    int ** T, i, j;
-    
 
+/*lembrar de passar a posicao vinda do desempilha da pilha posicoes*/
+void movimenta(int ** tab, posicao p, int movimento, pilhaPosicao * posicoesGeradas) {
+    posicao aux;
+
+    switch (movimento) {
+        case 1:
+            tab[p.linha][p.coluna] = 1;
+            aux.linha = p.linha;
+            aux.coluna = p.coluna + 1;
+            
+            tab[aux.linha][aux.coluna] = -1;
+            empilhaPosicao(posicoesGeradas, aux);
+            aux.coluna++;
+
+            tab[aux.linha][aux.coluna] = -1;
+            empilhaPosicao(posicoesGeradas, aux);
+
+            break;
+            
+        case 2:
+            tab[p.linha][p.coluna] = 1;
+            aux.linha = p.linha - 1;
+            aux.coluna = p.coluna;
+            
+            tab[aux.linha][aux.coluna] = -1;
+            empilhaPosicao(posicoesGeradas, aux);
+            aux.linha--;
+
+            tab[aux.linha][aux.coluna] = -1;
+            empilhaPosicao(posicoesGeradas, aux);
+
+            break;
+
+        case 3:
+            tab[p.linha][p.coluna] = 1;
+            aux.linha = p.linha;
+            aux.coluna = p.coluna - 1;
+            
+            tab[aux.linha][aux.coluna] = -1;
+            empilhaPosicao(posicoesGeradas, aux);
+            aux.coluna--;
+
+            tab[aux.linha][aux.coluna] = -1;
+            empilhaPosicao(posicoesGeradas, aux);
+
+            break;
+
+        case 4:
+            tab[p.linha][p.coluna] = 1;
+            aux.linha = p.linha + 1;
+            aux.coluna = p.coluna;
+            
+            tab[aux.linha][aux.coluna] = -1;
+            empilhaPosicao(posicoesGeradas, aux);
+            aux.linha++;
+
+            tab[aux.linha][aux.coluna] = -1;
+            empilhaPosicao(posicoesGeradas, aux);
+
+            break;
+    }
+}
+
+void jogo(int ** tab, int m, int n) {
+    int ** T, i, j, aux, contMovimento = 1;
+    pilhaPosicao * posicoes, * posicoesGeradas;
+    pilha * movimento;
+    posicao paux;
+
+    posicoesGeradas = criaPilhaPosicao(m * n);//melhorar isso
+
+
+    /*cria matriz inversa e adiciona os espaços já existentes à lista de espaços gerados*/
     T = malloc(m * sizeof(int *));
     for (i = 0; i < n; i++)
         T[i] = malloc(n * sizeof(int));
 
+    
     for (i = 0; i < m; i++) 
         for (j = 0; j < n; j++) {
             if(tab[i][j] == 1)
                 T[i][j] = -1;
-            else if(tab[i][j] == -1)
+            else if(tab[i][j] == -1) {
+                paux.linha = i;
+                paux.coluna = j;
+                empilhaPosicao(posicoesGeradas, paux);
                 T[i][j] = 1;
+            }
             else
                 T[i][j] = 0;
         }
 
+    /*VOLTAR AQUI!*/
 
+    if (tabuleiroIgual(tab, T, m, n))
+        printf("tabuleiro igual\n");
+    else
+        printf("tabuleiro diferente\n");
+
+    destroiPilhaPosicao(posicoesGeradas);
+    destroiMatriz(tab, m);
+    destroiMatriz(T, m);
 }
 int main(int argc, char const *argv[])
 {
     int ** tab;
     tab = criaMatriz(7, 7);
     setJogo(tab, 7, 2);
+    jogo(tab, 7, 7);
 
-    tab2 = criaMatriz(7, 7);
-    tab2 = inverteTabuleiro(tab, 7, 7);
     
-    imprimeMatriz(tab2, 7, 7);
-    printf("\n");
-    imprimeMatriz(tab, 7, 7);
-    printf("%d", tabuleiroIgual(tab, tab2, 7, 7));
-    
-    destroiMatriz(tab, 7, 7);
-    destroiMatriz(tab2, 7, 7);
     return 0;
 }
