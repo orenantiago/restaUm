@@ -148,7 +148,7 @@ v = peça vazia
 ela se movimenta sse tiver duas peças ao lado do movimento
 apos o movimento, se torna peça e as peças viram espaço
 */
-
+//feita!
 int verificaMovimento(int ** tab, int m, int n, posicao p, int movimento) {
     int pode = 0;
 
@@ -182,19 +182,19 @@ int verificaMovimento(int ** tab, int m, int n, posicao p, int movimento) {
 
 
 /*lembrar de passar a posicao vinda do desempilha da pilha posicoes*/
-void movimenta(int ** tab, posicao p, int movimento, pilhaPosicao * posicoesGeradas) {
+void movimenta(int ** tab, posicao p, int movimento, pilhaPosicao * posicoes, pilhaPosicao * posicoesGeradas) {
     posicao aux;
 
     switch (movimento) {
         case 1:
             tab[p.linha][p.coluna] = 1;
             aux.linha = p.linha;
-            aux.coluna = p.coluna + 1;
-            
+            aux.coluna = p.coluna;
+            empilhaPosicao(posicoes, aux);
+            aux.coluna++;
             tab[aux.linha][aux.coluna] = -1;
             empilhaPosicao(posicoesGeradas, aux);
             aux.coluna++;
-
             tab[aux.linha][aux.coluna] = -1;
             empilhaPosicao(posicoesGeradas, aux);
 
@@ -202,13 +202,13 @@ void movimenta(int ** tab, posicao p, int movimento, pilhaPosicao * posicoesGera
             
         case 2:
             tab[p.linha][p.coluna] = 1;
-            aux.linha = p.linha - 1;
+            aux.linha = p.linha;
             aux.coluna = p.coluna;
-            
+            empilhaPosicao(posicoes, aux);
+            aux.linha--;
             tab[aux.linha][aux.coluna] = -1;
             empilhaPosicao(posicoesGeradas, aux);
             aux.linha--;
-
             tab[aux.linha][aux.coluna] = -1;
             empilhaPosicao(posicoesGeradas, aux);
 
@@ -217,12 +217,12 @@ void movimenta(int ** tab, posicao p, int movimento, pilhaPosicao * posicoesGera
         case 3:
             tab[p.linha][p.coluna] = 1;
             aux.linha = p.linha;
-            aux.coluna = p.coluna - 1;
-            
+            aux.coluna = p.coluna;
+            empilhaPosicao(posicoes, aux);
+            aux.coluna--;        
             tab[aux.linha][aux.coluna] = -1;
             empilhaPosicao(posicoesGeradas, aux);
             aux.coluna--;
-
             tab[aux.linha][aux.coluna] = -1;
             empilhaPosicao(posicoesGeradas, aux);
 
@@ -230,18 +230,23 @@ void movimenta(int ** tab, posicao p, int movimento, pilhaPosicao * posicoesGera
 
         case 4:
             tab[p.linha][p.coluna] = 1;
-            aux.linha = p.linha + 1;
+            aux.linha = p.linha;
             aux.coluna = p.coluna;
-            
+            empilhaPosicao(posicoes, aux);
+            aux.linha++;
             tab[aux.linha][aux.coluna] = -1;
             empilhaPosicao(posicoesGeradas, aux);
             aux.linha++;
-
             tab[aux.linha][aux.coluna] = -1;
             empilhaPosicao(posicoesGeradas, aux);
 
             break;
     }
+}
+
+// a posicao p é o desempilha da posicao
+void desfazMovimento(int ** tab, posicao p, int movimento, pilha * posicoesGeradas) {
+
 }
 
 void jogo(int ** tab, int m, int n) {
@@ -251,6 +256,7 @@ void jogo(int ** tab, int m, int n) {
     posicao paux;
 
     posicoesGeradas = criaPilhaPosicao(m * n);//melhorar isso
+    posicoes = criaPilhaPosicao(m * n);
 
 
     /*cria matriz inversa e adiciona os espaços já existentes à lista de espaços gerados*/
@@ -261,8 +267,9 @@ void jogo(int ** tab, int m, int n) {
     
     for (i = 0; i < m; i++) 
         for (j = 0; j < n; j++) {
-            if(tab[i][j] == 1)
+            if(tab[i][j] == 1) {
                 T[i][j] = -1;
+            }
             else if(tab[i][j] == -1) {
                 paux.linha = i;
                 paux.coluna = j;
@@ -274,6 +281,9 @@ void jogo(int ** tab, int m, int n) {
         }
 
     /*VOLTAR AQUI!*/
+    while (!tabuleiroIgual(tab, T, m, n) || tamanhoPilhaPosicao(posicoesGeradas) != 0 && contMovimento <= 4) {
+
+    }
 
     if (tabuleiroIgual(tab, T, m, n))
         printf("tabuleiro igual\n");
@@ -292,18 +302,19 @@ int main(int argc, char const *argv[])
 
     pos = criaPilhaPosicao(10);
 
-    aux.linha = 3;
+    aux.linha = 5;
     aux.coluna = 3;
     
     tab = criaMatriz(7, 7);
     setJogo(tab, 7, 2);
 
-    tab[6][3] = -1;
+    tab[3][2] = -1;
+    tab[3][3] = 1;
     imprimeMatriz(tab, 7, 7);
 
     if(verificaMovimento(tab, 7, 7, aux, 4)){
         printf("pode mover\n");
-        movimenta(tab, aux, 4, pos);
+        movimenta(tab, aux, 2, pos);
         imprimeMatriz(tab, 7, 7);
     } else {
         printf("não pude mover\n");
