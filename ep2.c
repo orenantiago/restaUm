@@ -6,10 +6,6 @@ typedef struct {
     int topo;
 } pilha;
 
-typedef struct {
-    int linha, coluna;
-} posicao;
-
 pilha * criaPilha(int n) {
     pilha * p;
     p = malloc(sizeof(pilha));
@@ -39,44 +35,6 @@ int pilhaVazia(pilha p) {
 }
 
 void destroiPilha(pilha * p) {
-    free(p -> v);
-    free(p);
-}
-
-typedef struct {
-    posicao * v;
-    int topo;
-} pilhaPosicao;
-
-pilhaPosicao * criaPilhaPosicao(int n) {
-    pilhaPosicao * p;
-    p = malloc(sizeof(pilha));
-    p -> v = malloc(n * sizeof(posicao));
-    p -> topo = 0;
-    return p;
-}
-
-void empilhaPosicao(pilhaPosicao * p, posicao x) {
-    p -> v[p -> topo++] = x;
-}
-
-posicao desempilhaPosicao(pilhaPosicao * p) {
-    p -> topo --;
-    return p -> v[p -> topo];
-}
-
-int tamanhoPilhaPosicao(pilhaPosicao p) {
-    return p.topo;
-}
-
-int pilhaPosicaoVazia(pilhaPosicao p) {
-    if (p.topo == 0)
-        return 1;
-    else
-        return 0;
-}
-
-void destroiPilhaPosicao(pilhaPosicao * p) {
     free(p -> v);
     free(p);
 }
@@ -112,6 +70,7 @@ void imprimeMatriz(int ** tab, int m, int n) {
 
 /*essa função será apagada antes de entregar o ep,
 é apenas para testes. Recebe a matriz, m, n e a distancia entre os 1 e o vertice*/
+//feita
 void setJogo(int ** tab, int m, int dist) {
     int i, j;
     for(i = 0; i < m; i++)
@@ -122,6 +81,7 @@ void setJogo(int ** tab, int m, int dist) {
     tab[(m-1)/2][(m-1)/2] = -1;
 }
 
+//feita
 int tabuleiroIgual(int ** tab1, int ** tab2, int m, int n) {
     int i, j, igual;
 
@@ -136,6 +96,35 @@ int tabuleiroIgual(int ** tab1, int ** tab2, int m, int n) {
 
     return igual;
 }
+
+/*recebe ponteiros da posicao atual e a partir dela procura o espaço vazio(podendo retornar ela mesma.
+no inicio do programa, a posicao atual será (0,0)
+*/
+//feita
+void checaVazios(int ** tab, int m, int n, int * linha, int * coluna) {
+    int i, j;
+
+    i = *linha;
+    j = *coluna;
+    
+    while (i < m) {
+        while (j < n) {
+            if (tab[i][j] == -1) {
+                *linha = i;
+                *coluna = j;
+                return;
+            }
+            j++;
+        }
+        j = 0;
+        i++;
+    }
+
+    *linha = 0;
+    *coluna = 0;
+    return;
+}
+
 /*
     2
     ^
@@ -149,31 +138,31 @@ ela se movimenta sse tiver duas peças ao lado do movimento
 apos o movimento, se torna peça e as peças viram espaço
 */
 //feita!
-int verificaMovimento(int ** tab, int m, int n, posicao p, int movimento) {
+int verificaMovimento(int ** tab, int m, int n, int movimento, int linha, int coluna) {
     int pode = 0;
 
     switch (movimento) {
         case 1:
-            if (p.coluna + 1 < n && p.coluna + 2 < n)
-                if (tab[p.linha][p.coluna + 1] == 1 && tab[p.linha][p.coluna + 2] == 1)
+            if (coluna + 1 < n && coluna + 2 < n)
+                if (tab[linha][coluna + 1] == 1 && tab[linha][coluna + 2] == 1)
                     pode = 1;
         break;
         
         case 2:
-            if (p.linha - 1 >= 0 && p.linha - 2 > 0)
-                if (tab[p.linha - 1][p.coluna] == 1 && tab[p.linha - 2][p.coluna] == 1)
+            if (linha - 1 >= 0 && linha - 2 > 0)
+                if (tab[linha - 1][coluna] == 1 && tab[linha - 2][coluna] == 1)
                     pode = 1;
         break;
 
         case 3:
-            if (p.coluna - 1 < n && p.coluna - 2 < n)
-                if (tab[p.linha][p.coluna - 1] == 1 && tab[p.linha][p.coluna - 2] == 1)
+            if (coluna - 1 < n && coluna - 2 < n)
+                if (tab[linha][coluna - 1] == 1 && tab[linha][coluna - 2] == 1)
                     pode = 1;
         break;
 
         case 4:
-            if (p.linha + 1 < m && p.linha + 2 < m)
-                if (tab[p.linha + 1][p.coluna] == 1 && tab[p.linha + 2][p.coluna] == 1)
+            if (linha + 1 < m && linha + 2 < m)
+                if (tab[linha + 1][coluna] == 1 && tab[linha + 2][coluna] == 1)
                     pode = 1;
         break;
     }
@@ -181,147 +170,179 @@ int verificaMovimento(int ** tab, int m, int n, posicao p, int movimento) {
 }
 
 
-/*lembrar de passar a posicao vinda do desempilha da pilha posicoes*/
-void movimenta(int ** tab, posicao p, int movimento, pilhaPosicao * posicoes, pilhaPosicao * posicoesGeradas) {
-    posicao aux;
-
+/*a linha e coluna será empilhada nas respectivas pilhas, e o movimento também
+feito*/
+void movimenta(int ** tab, int movimento, int linha, int coluna) {
+    tab[linha][coluna] = 1;
+    
     switch (movimento) {
         case 1:
-            tab[p.linha][p.coluna] = 1;
-            aux.linha = p.linha;
-            aux.coluna = p.coluna;
-            empilhaPosicao(posicoes, aux);
-            aux.coluna++;
-            tab[aux.linha][aux.coluna] = -1;
-            empilhaPosicao(posicoesGeradas, aux);
-            aux.coluna++;
-            tab[aux.linha][aux.coluna] = -1;
-            empilhaPosicao(posicoesGeradas, aux);
-
+            tab[linha][coluna + 1] = -1;
+            tab[linha][coluna + 2] = -1;
             break;
             
         case 2:
-            tab[p.linha][p.coluna] = 1;
-            aux.linha = p.linha;
-            aux.coluna = p.coluna;
-            empilhaPosicao(posicoes, aux);
-            aux.linha--;
-            tab[aux.linha][aux.coluna] = -1;
-            empilhaPosicao(posicoesGeradas, aux);
-            aux.linha--;
-            tab[aux.linha][aux.coluna] = -1;
-            empilhaPosicao(posicoesGeradas, aux);
-
+            tab[linha - 1][coluna] = -1;
+            tab[linha - 2][coluna] = -1;
             break;
 
         case 3:
-            tab[p.linha][p.coluna] = 1;
-            aux.linha = p.linha;
-            aux.coluna = p.coluna;
-            empilhaPosicao(posicoes, aux);
-            aux.coluna--;        
-            tab[aux.linha][aux.coluna] = -1;
-            empilhaPosicao(posicoesGeradas, aux);
-            aux.coluna--;
-            tab[aux.linha][aux.coluna] = -1;
-            empilhaPosicao(posicoesGeradas, aux);
-
+            tab[linha][coluna - 1] = -1;
+            tab[linha][coluna - 2] = -1;
             break;
 
         case 4:
-            tab[p.linha][p.coluna] = 1;
-            aux.linha = p.linha;
-            aux.coluna = p.coluna;
-            empilhaPosicao(posicoes, aux);
-            aux.linha++;
-            tab[aux.linha][aux.coluna] = -1;
-            empilhaPosicao(posicoesGeradas, aux);
-            aux.linha++;
-            tab[aux.linha][aux.coluna] = -1;
-            empilhaPosicao(posicoesGeradas, aux);
-
+            tab[linha + 1][coluna] = -1;
+            tab[linha + 2][coluna] = -1;
             break;
     }
 }
 
 // a posicao p é o desempilha da posicao
-void desfazMovimento(int ** tab, posicao p, int movimento, pilha * posicoesGeradas) {
+//feito
+void desfazMovimento(int ** tab, int movimento, int linha, int coluna) {
+    tab[linha][coluna] = -1;
+    switch (movimento) {
+        case 1:
+            tab[linha][coluna + 1] = 1;
+            tab[linha][coluna + 2] = 1;
+            break;
+            
+        case 2:
+            tab[linha - 1][coluna] = 1;
+            tab[linha - 2][coluna] = 1;
+            break;
 
+        case 3:
+            tab[linha][coluna - 1] = 1;
+            tab[linha][coluna - 2] = 1;
+            break;
+
+        case 4:
+            tab[linha + 1][coluna] = 1;
+            tab[linha + 2][coluna] = 1;
+            break;
+
+    }
 }
 
 void jogo(int ** tab, int m, int n) {
-    int ** T, i, j, aux, contMovimento = 1;
-    pilhaPosicao * posicoes, * posicoesGeradas;
-    pilha * movimento;
-    posicao paux;
-
-    posicoesGeradas = criaPilhaPosicao(m * n);//melhorar isso
-    posicoes = criaPilhaPosicao(m * n);
-
-
-    /*cria matriz inversa e adiciona os espaços já existentes à lista de espaços gerados*/
-    T = malloc(m * sizeof(int *));
-    for (i = 0; i < n; i++)
-        T[i] = malloc(n * sizeof(int));
-
+    int ** tab_inverso, i, j, aux, movimentoAtual = 1, linhaAtual, colunaAtual, x, cont;
+    pilha * movimentos, * linhas, * colunas;
     
+    scanf("%d", &x);
+    cont = 1;
+
+    movimentos = criaPilha(m * n);
+    linhas = criaPilha(m * n);
+    colunas = criaPilha(m * n);
+    linhaAtual = 0;
+    colunaAtual = 0;
+    
+
+    /*cria matriz inversa e adiciona os espaços já existentes à lista*/
+    tab_inverso = malloc(m * sizeof(int *));
+    for (i = 0; i < n; i++)
+        tab_inverso[i] = malloc(n * sizeof(int));
+
     for (i = 0; i < m; i++) 
         for (j = 0; j < n; j++) {
             if(tab[i][j] == 1) {
-                T[i][j] = -1;
+                tab_inverso[i][j] = -1;
             }
             else if(tab[i][j] == -1) {
-                paux.linha = i;
-                paux.coluna = j;
-                empilhaPosicao(posicoesGeradas, paux);
-                T[i][j] = 1;
+                linhaAtual = i;
+                colunaAtual = j;
+                tab_inverso[i][j] = 1;
             }
             else
-                T[i][j] = 0;
+                tab_inverso[i][j] = 0;
         }
 
-    /*VOLTAR AQUI!*/
-    while (!tabuleiroIgual(tab, T, m, n) || tamanhoPilhaPosicao(posicoesGeradas) != 0 && contMovimento <= 4) {
+
+    /*VOLTAR AQUI*/
+    
+    while (!tabuleiroIgual(tab, tab_inverso, m, n)) {
+        if (cont <= x) {
+
+        checaVazios(tab, m, n, &linhaAtual, &colunaAtual);
+
+
+        if (verificaMovimento(tab, m, n, movimentoAtual, linhaAtual, colunaAtual)) {
+            movimenta(tab, movimentoAtual, linhaAtual, colunaAtual);
+            empilha(linhas, linhaAtual);
+            empilha(colunas, colunaAtual);
+            empilha(movimentos, movimentoAtual);
+            linhaAtual = 0;
+            colunaAtual = 0;
+        } 
+        else if (movimentoAtual < 4) {
+            printf("if 1 movimento atual: %d linhaAtual: %d colunaAtual: %d\n", movimentoAtual, linhaAtual, colunaAtual);
+            movimentoAtual++;
+        }
+        else if(colunaAtual < n - 1) {
+            colunaAtual++;
+            checaVazios(tab, m, n, &linhaAtual, &colunaAtual);
+        }
+        else if(linhaAtual < m - 1) {
+            linhaAtual++;
+            checaVazios(tab, m, n, &linhaAtual, &colunaAtual);
+        }
+        else { /*backtrack*/
+            if (pilhaVazia(*movimentos)) {
+                printf("o problema não tem solução\n");
+                return;
+            } else {
+                movimentoAtual = desempilha(movimentos);
+                linhaAtual = desempilha(linhas);
+                colunaAtual = desempilha(colunas);
+                desfazMovimento(tab, movimentoAtual, linhaAtual, colunaAtual);
+            }
+        }
+            printf("tentativa %d\n", cont);
+            imprimeMatriz(tab, m, n);
+        
+
+
+        } 
+
+
+
+        else {
+            if (tabuleiroIgual(tab, tab_inverso, m, n))
+                printf("tabuleiro igual\n");
+            else
+                printf("tabuleiro diferente\n");
+            destroiMatriz(tab, m);
+            destroiMatriz(tab_inverso, m);
+            destroiPilha(movimentos);
+            destroiPilha(linhas);
+            destroiPilha(colunas);
+            return;
+        }
+        cont++;
 
     }
 
-    if (tabuleiroIgual(tab, T, m, n))
+    if (tabuleiroIgual(tab, tab_inverso, m, n))
         printf("tabuleiro igual\n");
     else
         printf("tabuleiro diferente\n");
 
-    destroiPilhaPosicao(posicoesGeradas);
     destroiMatriz(tab, m);
-    destroiMatriz(T, m);
+    destroiMatriz(tab_inverso, m);
+    destroiPilha(movimentos);
+    destroiPilha(linhas);
+    destroiPilha(colunas);
+    return;
 }
 int main(int argc, char const *argv[])
 {
-    int ** tab;
-    posicao aux;
-    pilhaPosicao * pos;
-
-    pos = criaPilhaPosicao(10);
-
-    aux.linha = 5;
-    aux.coluna = 3;
+    int ** tab, linha, coluna, movimento, l, c;
     
     tab = criaMatriz(7, 7);
     setJogo(tab, 7, 2);
-
-    tab[3][2] = -1;
-    tab[3][3] = 1;
-    imprimeMatriz(tab, 7, 7);
-
-    if(verificaMovimento(tab, 7, 7, aux, 4)){
-        printf("pode mover\n");
-        movimenta(tab, aux, 2, pos);
-        imprimeMatriz(tab, 7, 7);
-    } else {
-        printf("não pude mover\n");
-    }
-
-    destroiMatriz(tab, 7);
-    destroiPilhaPosicao(pos);
+    jogo(tab, 7, 7);
     
     return 0;
 }
