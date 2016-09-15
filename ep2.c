@@ -101,7 +101,7 @@ int tabuleiroIgual(int ** tab1, int ** tab2, int m, int n) {
 no inicio do programa, a posicao atual será (0,0)
 */
 //feita
-void checaVazios(int ** tab, int m, int n, int * linha, int * coluna) {
+int checaVazios(int ** tab, int m, int n, int * linha, int * coluna) {
     int i, j;
 
     i = *linha;
@@ -112,7 +112,7 @@ void checaVazios(int ** tab, int m, int n, int * linha, int * coluna) {
             if (tab[i][j] == -1) {
                 *linha = i;
                 *coluna = j;
-                return;
+                return 1;
             }
             j++;
         }
@@ -120,9 +120,9 @@ void checaVazios(int ** tab, int m, int n, int * linha, int * coluna) {
         i++;
     }
 
-    *linha = 0;
-    *coluna = 0;
-    return;
+    //*linha = 0;
+    //*coluna = 0;
+    return 0;
 }
 
 /*
@@ -141,6 +141,8 @@ apos o movimento, se torna peça e as peças viram espaço
 int verificaMovimento(int ** tab, int m, int n, int movimento, int linha, int coluna) {
     int pode = 0;
 
+    if (tab[linha][coluna] != -1)
+        return pode;
     switch (movimento) {
         case 1:
             if (coluna + 1 < n && coluna + 2 < n)
@@ -229,9 +231,6 @@ void desfazMovimento(int ** tab, int movimento, int linha, int coluna) {
 void jogo(int ** tab, int m, int n) {
     int ** tab_inverso, i, j, aux, movimentoAtual = 1, linhaAtual, colunaAtual, x, cont;
     pilha * movimentos, * linhas, * colunas;
-    
-    scanf("%d", &x);
-    cont = 1;
 
     movimentos = criaPilha(m * n);
     linhas = criaPilha(m * n);
@@ -239,7 +238,7 @@ void jogo(int ** tab, int m, int n) {
     linhaAtual = 0;
     colunaAtual = 0;
     
-
+    scanf("%d", &x);
     /*cria matriz inversa e adiciona os espaços já existentes à lista*/
     tab_inverso = malloc(m * sizeof(int *));
     for (i = 0; i < n; i++)
@@ -262,12 +261,10 @@ void jogo(int ** tab, int m, int n) {
 
     /*VOLTAR AQUI*/
     
-    while (!tabuleiroIgual(tab, tab_inverso, m, n)) {
-        if (cont <= x) {
-
-        checaVazios(tab, m, n, &linhaAtual, &colunaAtual);
-
-
+    while (!tabuleiroIgual(tab, tab_inverso, m, n) && cont < x) {
+        //printf("linha atual = %d coluna atual = %d\n", linhaAtual, colunaAtual);
+        if (checaVazios(tab, m, n, &linhaAtual, &colunaAtual))
+        {
         if (verificaMovimento(tab, m, n, movimentoAtual, linhaAtual, colunaAtual)) {
             movimenta(tab, movimentoAtual, linhaAtual, colunaAtual);
             empilha(linhas, linhaAtual);
@@ -275,20 +272,28 @@ void jogo(int ** tab, int m, int n) {
             empilha(movimentos, movimentoAtual);
             linhaAtual = 0;
             colunaAtual = 0;
+            movimentoAtual = 0;
+            //imprimeMatriz(tab, m, n);
+            //printf("\n");
         } 
         else if (movimentoAtual < 4) {
-            printf("if 1 movimento atual: %d linhaAtual: %d colunaAtual: %d\n", movimentoAtual, linhaAtual, colunaAtual);
             movimentoAtual++;
         }
         else if(colunaAtual < n - 1) {
+            //printf("if 2\n");
+            //printf("coluna atual = %d linha atual = %d\n", colunaAtual, linhaAtual);
             colunaAtual++;
-            checaVazios(tab, m, n, &linhaAtual, &colunaAtual);
+            movimentoAtual = 0;
         }
         else if(linhaAtual < m - 1) {
+            //printf("if 3\n");
             linhaAtual++;
-            checaVazios(tab, m, n, &linhaAtual, &colunaAtual);
+            colunaAtual = 0;
+            movimentoAtual = 0;
+        }
         }
         else { /*backtrack*/
+            //printf("backtrack\n");
             if (pilhaVazia(*movimentos)) {
                 printf("o problema não tem solução\n");
                 return;
@@ -297,37 +302,25 @@ void jogo(int ** tab, int m, int n) {
                 linhaAtual = desempilha(linhas);
                 colunaAtual = desempilha(colunas);
                 desfazMovimento(tab, movimentoAtual, linhaAtual, colunaAtual);
+                movimentoAtual++;
             }
+            //imprimeMatriz(tab, m, n);
+            //printf("\n");
         }
-            printf("tentativa %d\n", cont);
-            imprimeMatriz(tab, m, n);
-        
-
-
-        } 
-
-
-
-        else {
-            if (tabuleiroIgual(tab, tab_inverso, m, n))
-                printf("tabuleiro igual\n");
-            else
-                printf("tabuleiro diferente\n");
-            destroiMatriz(tab, m);
-            destroiMatriz(tab_inverso, m);
-            destroiPilha(movimentos);
-            destroiPilha(linhas);
-            destroiPilha(colunas);
-            return;
-        }
-        cont++;
-
+            //printf("tentativa %d\n", cont);
+        //imprimeMatriz(tab, m, n);
+        //printf("\n");
+        x++;
     }
 
-    if (tabuleiroIgual(tab, tab_inverso, m, n))
+    if (tabuleiroIgual(tab, tab_inverso, m, n)) {
         printf("tabuleiro igual\n");
-    else
+        imprimeMatriz(tab, m, n);
+    }
+    else {
         printf("tabuleiro diferente\n");
+        imprimeMatriz(tab, m, n);
+    }
 
     destroiMatriz(tab, m);
     destroiMatriz(tab_inverso, m);
