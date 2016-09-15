@@ -120,8 +120,8 @@ int checaVazios(int ** tab, int m, int n, int * linha, int * coluna) {
         i++;
     }
 
-    //*linha = 0;
-    //*coluna = 0;
+    *linha = 0;
+    *coluna = 0;
     return 0;
 }
 
@@ -237,8 +237,10 @@ void jogo(int ** tab, int m, int n) {
     colunas = criaPilha(m * n);
     linhaAtual = 0;
     colunaAtual = 0;
+    movimentoAtual = 1;
     
     scanf("%d", &x);
+    cont = 0;
     /*cria matriz inversa e adiciona os espaços já existentes à lista*/
     tab_inverso = malloc(m * sizeof(int *));
     for (i = 0; i < n; i++)
@@ -265,39 +267,40 @@ void jogo(int ** tab, int m, int n) {
         //printf("linha atual = %d coluna atual = %d\n", linhaAtual, colunaAtual);
         if (checaVazios(tab, m, n, &linhaAtual, &colunaAtual))
         {
-        if (verificaMovimento(tab, m, n, movimentoAtual, linhaAtual, colunaAtual)) {
-            movimenta(tab, movimentoAtual, linhaAtual, colunaAtual);
-            empilha(linhas, linhaAtual);
-            empilha(colunas, colunaAtual);
-            empilha(movimentos, movimentoAtual);
-            linhaAtual = 0;
-            colunaAtual = 0;
-            movimentoAtual = 0;
-            //imprimeMatriz(tab, m, n);
-            //printf("\n");
-        } 
-        else if (movimentoAtual < 4) {
-            movimentoAtual++;
-        }
-        else if(colunaAtual < n - 1) {
-            //printf("if 2\n");
-            //printf("coluna atual = %d linha atual = %d\n", colunaAtual, linhaAtual);
-            colunaAtual++;
-            movimentoAtual = 0;
-        }
-        else if(linhaAtual < m - 1) {
-            //printf("if 3\n");
-            linhaAtual++;
-            colunaAtual = 0;
-            movimentoAtual = 0;
-        }
+            if (verificaMovimento(tab, m, n, movimentoAtual, linhaAtual, colunaAtual)) {
+                movimenta(tab, movimentoAtual, linhaAtual, colunaAtual);
+                empilha(linhas, linhaAtual);
+                empilha(colunas, colunaAtual);
+                empilha(movimentos, movimentoAtual);
+                linhaAtual = 0;
+                colunaAtual = 0;
+                movimentoAtual = 0;
+                //imprimeMatriz(tab, m, n);
+                //printf("\n");
+            } 
+            else if (movimentoAtual < 4) {
+                movimentoAtual++;
+            }
+            else if(colunaAtual < n - 1) {
+                //printf("if 2\n");
+                //printf("coluna atual = %d linha atual = %d\n", colunaAtual, linhaAtual);
+                colunaAtual++;
+                movimentoAtual = 0;
+            }
+            else if(linhaAtual < m - 1) {
+                //printf("if 3\n");
+                linhaAtual++;
+                colunaAtual = 0;
+                movimentoAtual = 0;
+            }
         }
         else { /*backtrack*/
-            //printf("backtrack\n");
+            printf("backtrack\n");
             if (pilhaVazia(*movimentos)) {
                 printf("o problema não tem solução\n");
                 return;
             } else {
+                printf("tamanho pilha = %d\n", tamanhoPilha(*movimentos));
                 movimentoAtual = desempilha(movimentos);
                 linhaAtual = desempilha(linhas);
                 colunaAtual = desempilha(colunas);
@@ -310,7 +313,7 @@ void jogo(int ** tab, int m, int n) {
             //printf("tentativa %d\n", cont);
         //imprimeMatriz(tab, m, n);
         //printf("\n");
-        x++;
+        //cont++;
     }
 
     if (tabuleiroIgual(tab, tab_inverso, m, n)) {
