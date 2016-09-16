@@ -151,13 +151,13 @@ int verificaMovimento(int ** tab, int m, int n, int movimento, int linha, int co
         break;
         
         case 2:
-            if (linha - 1 >= 0 && linha - 2 > 0)
+            if (linha - 1 > 0 && linha - 2 >= 0)
                 if (tab[linha - 1][coluna] == 1 && tab[linha - 2][coluna] == 1)
                     pode = 1;
         break;
 
         case 3:
-            if (coluna - 1 < n && coluna - 2 < n)
+            if (coluna - 1 > 0 && coluna - 2 >= 0)
                 if (tab[linha][coluna - 1] == 1 && tab[linha][coluna - 2] == 1)
                     pode = 1;
         break;
@@ -229,7 +229,7 @@ void desfazMovimento(int ** tab, int movimento, int linha, int coluna) {
 }
 
 void jogo(int ** tab, int m, int n) {
-    int ** tab_inverso, i, j, aux, movimentoAtual = 1, linhaAtual, colunaAtual, x, cont;
+    int ** tab_inverso, i, j, aux, movimentoAtual = 1, linhaAtual, colunaAtual, x, cont, vazio;
     pilha * movimentos, * linhas, * colunas;
 
     movimentos = criaPilha(m * n);
@@ -262,58 +262,67 @@ void jogo(int ** tab, int m, int n) {
 
 
     /*VOLTAR AQUI*/
-    
+    vazio = 0;
+
     while (!tabuleiroIgual(tab, tab_inverso, m, n) && cont < x) {
         //printf("linha atual = %d coluna atual = %d\n", linhaAtual, colunaAtual);
-        if (checaVazios(tab, m, n, &linhaAtual, &colunaAtual))
-        {
+        if (checaVazios(tab, m, n, &linhaAtual, &colunaAtual)) {
             if (verificaMovimento(tab, m, n, movimentoAtual, linhaAtual, colunaAtual)) {
+                //printf("movimento atual %d\n", movimentoAtual);
+
                 movimenta(tab, movimentoAtual, linhaAtual, colunaAtual);
                 empilha(linhas, linhaAtual);
                 empilha(colunas, colunaAtual);
                 empilha(movimentos, movimentoAtual);
+                printf("movimenta (%d, %d) %d\n", linhaAtual + 1, colunaAtual + 1, movimentoAtual);
                 linhaAtual = 0;
                 colunaAtual = 0;
-                movimentoAtual = 0;
-                //imprimeMatriz(tab, m, n);
-                //printf("\n");
+                movimentoAtual = 1;
+                cont++;
+                imprimeMatriz(tab, m, n);
+                printf("\n");
             } 
             else if (movimentoAtual < 4) {
+                //printf("movimento atual Não rola %d\n", movimentoAtual);
                 movimentoAtual++;
             }
             else if(colunaAtual < n - 1) {
                 //printf("if 2\n");
                 //printf("coluna atual = %d linha atual = %d\n", colunaAtual, linhaAtual);
                 colunaAtual++;
-                movimentoAtual = 0;
+                movimentoAtual = 1;
             }
             else if(linhaAtual < m - 1) {
                 //printf("if 3\n");
                 linhaAtual++;
                 colunaAtual = 0;
-                movimentoAtual = 0;
+                movimentoAtual = 1;
             }
         }
         else { /*backtrack*/
-            printf("backtrack\n");
+            //printf("backtrack\n");
+            //imprimeMatriz(tab,m,n);
+            cont++;
+            //printf("\n");
             if (pilhaVazia(*movimentos)) {
                 printf("o problema não tem solução\n");
                 return;
             } else {
-                printf("tamanho pilha = %d\n", tamanhoPilha(*movimentos));
+                printf("%d\ntamanho pilha = %d\n", vazio, tamanhoPilha(*movimentos));
                 movimentoAtual = desempilha(movimentos);
                 linhaAtual = desempilha(linhas);
                 colunaAtual = desempilha(colunas);
                 desfazMovimento(tab, movimentoAtual, linhaAtual, colunaAtual);
+                printf("desfazMovimento (%d, %d) %d\n", linhaAtual + 1, colunaAtual + 1, movimentoAtual);
                 movimentoAtual++;
             }
-            //imprimeMatriz(tab, m, n);
-            //printf("\n");
+            imprimeMatriz(tab, m, n);
+            printf("\n");
         }
             //printf("tentativa %d\n", cont);
         //imprimeMatriz(tab, m, n);
         //printf("\n");
-        //cont++;
+        
     }
 
     if (tabuleiroIgual(tab, tab_inverso, m, n)) {
