@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#define debug(args...) //printf(args)
 
 typedef struct {
     int * v;
@@ -42,7 +41,7 @@ void destroiPilha(pilha * p) {
 
 int ** criaMatriz(int m, int n) {
     
-    int i, j;
+    int i;
     int ** tab;
     tab = malloc(m * sizeof(int *));
     for (i = 0; i < m; i++)
@@ -72,20 +71,6 @@ void imprimeMatriz(int ** tab, int m, int n) {
     }
 }
 
-/*essa função será apagada antes de entregar o ep,
-é apenas para testes. Recebe a matriz, m, n e a distancia entre os 1 e o vertice*/
-//feita
-void setJogo(int ** tab, int m, int dist) {
-    int i, j;
-    for(i = 0; i < m; i++)
-        for (j = dist; j < m - dist; j++) {
-            tab[i][j] = 1;
-            tab[j][i] = 1;
-        }
-    tab[(m-1)/2][(m-1)/2] = -1;
-}
-
-//feita
 int tabuleiroIgual(int ** tab1, int ** tab2, int m, int n) {
     int i, j, igual;
 
@@ -101,10 +86,7 @@ int tabuleiroIgual(int ** tab1, int ** tab2, int m, int n) {
     return igual;
 }
 
-/*recebe ponteiros da posicao atual e a partir dela procura o espaço vazio(podendo retornar ela mesma.
-no inicio do programa, a posicao atual será (0,0)
-*/
-//feita
+/*a partir da linha e da coluna, encontra o primeiro espaço não vazio do tabuleiro*/
 int checaPecas(int ** tab, int m, int n, int * linha, int * coluna) {
     int i, j;
 
@@ -141,36 +123,29 @@ v = peça vazia
 ela se movimenta sse tiver duas peças ao lado do movimento
 apos o movimento, se torna peça e as peças viram espaço
 */
-//feita!
 int verificaMovimento(int ** tab, int m, int n, int movimento, int linha, int coluna) {
     int pode = 0;
 
-    if (tab[linha][coluna] != 1)
-        return pode;
     switch (movimento) {
         case 1:
-            if (coluna + 1 < n && coluna + 2 < n)
-                if (tab[linha][coluna + 1] == 1 && tab[linha][coluna + 2] == -1)
+            if (coluna + 2 < n && tab[linha][coluna + 1] == 1 && tab[linha][coluna + 2] == -1) 
                     pode = 1;
-        break;
+            break;
         
         case 2:
-            if (linha - 1 > 0 && linha - 2 >= 0)
-                if (tab[linha - 1][coluna] == 1 && tab[linha - 2][coluna] == -1)
+            if (linha - 2 >= 0 && tab[linha - 1][coluna] == 1 && tab[linha - 2][coluna] == -1)
                     pode = 1;
-        break;
+            break;
 
         case 3:
-            if (coluna - 1 > 0 && coluna - 2 >= 0)
-                if (tab[linha][coluna - 1] == 1 && tab[linha][coluna - 2] == -1)
+            if (coluna - 2 >= 0 && tab[linha][coluna - 1] == 1 && tab[linha][coluna - 2] == -1)
                     pode = 1;
-        break;
+            break;
 
         case 4:
-            if (linha + 1 < m && linha + 2 < m)
-                if (tab[linha + 1][coluna] == 1 && tab[linha + 2][coluna] == -1)
+            if (linha + 2 < m && tab[linha + 1][coluna] == 1 && tab[linha + 2][coluna] == -1)
                     pode = 1;
-        break;
+            break;
     }
     return pode;
 }
@@ -179,6 +154,7 @@ int verificaMovimento(int ** tab, int m, int n, int movimento, int linha, int co
 /*a linha e coluna será empilhada nas respectivas pilhas, e o movimento também
 feito*/
 void movimenta(int ** tab, int movimento, int linha, int coluna) {
+    
     tab[linha][coluna] = -1;
     
     switch (movimento) {
@@ -204,10 +180,10 @@ void movimenta(int ** tab, int movimento, int linha, int coluna) {
     }
 }
 
-// a posicao p é o desempilha da posicao
-//feito
 void desfazMovimento(int ** tab, int movimento, int linha, int coluna) {
+    
     tab[linha][coluna] = 1;
+    
     switch (movimento) {
         case 1:
             tab[linha][coluna + 1] = 1;
@@ -233,7 +209,7 @@ void desfazMovimento(int ** tab, int movimento, int linha, int coluna) {
 }
 
 void jogo(int ** tab, int m, int n) {
-    int ** tab_inverso, i, j, movimentoAtual, linhaAtual, colunaAtual, cont;
+    int ** tab_inverso, i, j, movimentoAtual, linhaAtual, colunaAtual;
     pilha * movimentos, * linhas, * colunas;
 
     movimentos = criaPilha(m * n);
@@ -245,9 +221,7 @@ void jogo(int ** tab, int m, int n) {
     movimentoAtual = 1;
     
     /*cria matriz inversa e adiciona os espaços já existentes à lista*/
-    tab_inverso = malloc(m * sizeof(int *));
-    for (i = 0; i < n; i++)
-        tab_inverso[i] = malloc(n * sizeof(int));
+    tab_inverso = criaMatriz(m, n);
 
     for (i = 0; i < m; i++) 
         for (j = 0; j < n; j++) {
@@ -261,9 +235,6 @@ void jogo(int ** tab, int m, int n) {
                 tab_inverso[i][j] = 0;
         }
 
-    linhaAtual = 0;
-    colunaAtual = 0;
-    /*VOLTAR AQUI*/
     while (!tabuleiroIgual(tab, tab_inverso, m, n)) {
         if (checaPecas(tab, m, n, &linhaAtual, &colunaAtual)) {
             if (verificaMovimento(tab, m, n, movimentoAtual, linhaAtual, colunaAtual)) {
@@ -273,17 +244,11 @@ void jogo(int ** tab, int m, int n) {
                 empilha(colunas, colunaAtual);
                 empilha(movimentos, movimentoAtual);
                 
-                //printf("movimenta (%d, %d) %d\n", linhaAtual + 1, colunaAtual + 1, movimentoAtual);
                 linhaAtual = 0;
                 colunaAtual = 0;
-                movimentoAtual = 1;
-                
-                //imprimeMatriz(tab, m, n);
-                //printf("\n");
-                cont++;
+                movimentoAtual = 1;                
             } 
             else if (movimentoAtual < 4) {
-                //printf("movimento atual Não rola %d\n", movimentoAtual);
                 movimentoAtual++;
             }
             else if(colunaAtual < n && linhaAtual < m) {
@@ -291,14 +256,11 @@ void jogo(int ** tab, int m, int n) {
                 movimentoAtual = 1;
                 if(colunaAtual == 0)
                     linhaAtual++;
-                //debug("procura proximo\n");
             }
         }
         else { /*backtrack*/
-            //debug("desfaz movimento");
-            printf("%d\n", movimentos -> topo);
             if (pilhaVazia(*movimentos)) {
-                printf("o problema não tem solução\n");
+                printf("Impossivel\n");
                 return;
             } else {
                 movimentoAtual = desempilha(movimentos);
@@ -308,15 +270,6 @@ void jogo(int ** tab, int m, int n) {
                 movimentoAtual++;
             }
         }
-    }
-
-    if (tabuleiroIgual(tab, tab_inverso, m, n)) {
-        printf("tabuleiro igual\n");
-        imprimeMatriz(tab, m, n);
-    }
-    else {
-        printf("tabuleiro diferente\n");
-        imprimeMatriz(tab, m, n);
     }
 
     destroiMatriz(tab, m);
@@ -337,6 +290,7 @@ void jogo(int ** tab, int m, int n) {
             printf("%d:%d-%d:%d\n", linhaAtual, colunaAtual, linhaAtual + 2, colunaAtual);
 
     }
+
     destroiPilha(movimentos);
     destroiPilha(linhas);
     destroiPilha(colunas);
@@ -344,12 +298,17 @@ void jogo(int ** tab, int m, int n) {
 }
 int main(int argc, char const *argv[])
 {
-    int ** tab, linha, coluna, movimento, l, c;
+    int ** tab, m, n, i, j;
     
-    tab = criaMatriz(5, 5);
-    setJogo(tab, 5, 1);
-    //imprimeMatriz(tab, 5, 5);
-    jogo(tab, 5, 5);
+    scanf("%d %d", &m, &n);
+
+    tab = criaMatriz(m, n);
+    
+    for(i = 0; i < m; i++)
+        for(j = 0; j < n; j++)
+            scanf("%d", &tab[i][j]);
+
+    jogo(tab, m, n);
     
     return 0;
 }
